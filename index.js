@@ -13,7 +13,7 @@ app.use("/api",actorRouter);
 
 
 app.get("/", (req, res) => {
-  res.send("Yoo");
+  res.send("Hello");
 });
 
 app.listen(PORT, () => {
