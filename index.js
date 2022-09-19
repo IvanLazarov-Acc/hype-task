@@ -1,6 +1,6 @@
 const express = require("express");
 const actorRouter = require("./routes/actorRouter");
-require("dotenv/config");
+require('dotenv/config');
 
 const PORT = process.env.PORT;
 console.log(process.env.PORT);

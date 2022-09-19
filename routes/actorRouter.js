@@ -3,21 +3,21 @@ const express = require("express");
 const router = express.Router();
 
 const {
-    getActors,
-    getActorById,
-    postActor,
+    getTableItems,
+    getTableItem,
+    postItem,
     updateActorById,
     deleteActorById
 } = require("../controllers/actorController");
 
-router.get("/mystore-actor", getActors);
+router.get("/:schema-:table", getTableItems);
 
-router.get("/mystore-actor/:id", getActorById);
+router.get("/:schema-:table/:id", getTableItem);
 
-router.post("/mystore-actor",postActor);
+router.post("/:schema-:table",postItem);
 
-router.put("/mystore-actor/:id", updateActorById);
+router.put("/:schema-:table/:id", updateActorById);
 
-router.delete("/mystore-actor/:id", deleteActorById);
+router.delete("/:schema-:table/:id", deleteActorById);
 
 module.exports = router;
