@@ -1,16 +1,42 @@
 const knex = require("../database/database");
+const fileSystem = require("fs");
+const fastcsv = require("fast-csv");
+const { resourceLimits } = require("worker_threads");
 
 const getTableItems = async (req, res) => {
     const [schema, table] = Object.values(req.params);
-    const information = await knex.withSchema(schema)
-    .select('*')
-    .from(table);
-    
-    res.send(information);
+    // const [schema, table, download] = Object.values(req.params);
+    // if(typeof download === bool){
+    //     res.send(`Download should be true or false`);
+    //     return;
+    // }
+    if(schema && table){
+        
+        const information = await knex.withSchema(schema)
+        .select('*')
+        .from(table);
+        
+ 
+        // if(download){
+        //     const writeStream = fileSystem.createWriteStream(`./files/${table}-information.csv`);
+        //     fastcsv.write(information)
+        //         .on("finish", ()=>{
+        //             res.send(`<a href='./files/${table}-information.csv' download='${table}-information.csv' id='download-link'></a><script>document.getElementById('download-link').click();</script>`)
+        //         }).pipe(writeStream);
+        // }else{
+            res.send(information);
+        // }
+
+    }
+    else{
+        res.sendStatus(404);
+    }
+
+
 }
 
 const getTableItem = async (req, res) => {
-    //Check after email returned console.log(req);
+
     const [schema, table, id] = Object.values(req.params);
     const requestedId =  parseInt(id);
 
@@ -30,6 +56,27 @@ const getTableItem = async (req, res) => {
     }
     
 }
+
+// const getTableItemByParameters = async (req, res) => {
+
+//     const [schema, table, id, first_name, last_name] = Object.values(req.params);
+//     const requestedId =  parseInt(id);
+
+//     if(requestedId === null || requestedId===undefined || isNaN(requestedId)){
+//         res.sendStatus(404);
+//     }else{  
+//         const actor = await knex.withSchema(schema)
+//         .select('*')
+//         .from(table).where(`${table}_id`, requestedId).andWhere();
+//         if(actor){
+//             res.send(actor);
+//         }else{
+//             res.sendStatus(404);
+//         }
+        
+//     }
+    
+// }
 
 const postItem = async (req, res) => {
     
@@ -70,30 +117,35 @@ const postItem = async (req, res) => {
 
 }
 
-const updateActorById = async (req, res) => {
-    const requestedId = req.params.id;
+const updateItemById = async (req, res) => {
+    const [schema, table, id] = Object.values(req.params);
+    const requestedId =  parseInt(id);
+
     const currentDate = new Date();
-    const {firstName, lastName} = req.body;
+    if(schema && table){
+        const actorForUpdate = {
+            [`${table}_id`]:requestedId,
+            ...req.body,
+            last_update:currentDate
+        }
+        if(requestedId === null || requestedId===undefined || isNaN(requestedId)){
+            res.sendStatus(404);
+        
+        }else{
+            await knex.withSchema(schema)
+            .from(table)
+            .where(`${table}_id`, requestedId)
+            .update(actorForUpdate);
 
-    const actorForUpdate = {
-        actor_id:requestedId,
-        first_name:firstName,
-        last_name:lastName,
-        last_update:currentDate
-    }
-    if(requestedId === null || requestedId===undefined || typeof requestedId !== typeof number){
-        res.sendStatus(404);
-        return;
-    }
-    await knex.withSchema('mystore')
-        .from('actor')
-        .where("actor_id", requestedId)
-        .update(actorForUpdate, ["actor_id", "first_name", "last_name", "last_update"]);
+            res.send(`Item with ${table}_id ${requestedId} has been updated!`);
+        }
 
-        res.send(`Actor with actor_id ${requestedId} has been updated!`);
 }
 
-const deleteActorById = async (req, res) => {
+
+}
+
+const deleteItemById = async (req, res) => {
     const [schema, table, requestedId] = Object.values(req.params);
     console.log(schema, table, requestedId);
     if(requestedId === null || requestedId===undefined || typeof requestedId !== typeof number){
@@ -116,7 +168,8 @@ const deleteActorById = async (req, res) => {
 module.exports = {
     getTableItems,
     getTableItem,
+    // getTableItemByParameters,
     postItem,
-    updateActorById,
-    deleteActorById
+    updateItemById,
+    deleteItemById
 }
